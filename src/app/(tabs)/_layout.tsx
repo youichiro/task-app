@@ -4,6 +4,8 @@ import { Tabs } from 'expo-router';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
+  // usage:
+  // <Tabs.Screen options={{ tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} /> }} />
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
 }) {
@@ -13,13 +15,8 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   return (
     <Tabs>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-        }}
-      />
+      <Tabs.Screen name="index" />
+      <Tabs.Screen name="auth" options={{ headerShown: false }} />
     </Tabs>
   );
 }

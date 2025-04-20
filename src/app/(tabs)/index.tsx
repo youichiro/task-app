@@ -1,14 +1,6 @@
-import { Input, InputField } from '@/components/ui/input';
+import { Redirect } from 'expo-router';
 import { Text, View } from 'react-native';
 
-export default function TabOneScreen() {
-  return (
-    <View>
-      <Text>Tab One</Text>
-      <Text>Email</Text>
-      <Input>
-        <InputField type="text" placeholder="Email" />
-      </Input>
-    </View>
-  );
+export default function TabIndexScreen() {
+  return <Redirect href="/(tabs)/auth" />;
 }
