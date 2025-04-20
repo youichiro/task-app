@@ -9,6 +9,8 @@ import {
 import { EyeIcon, EyeOffIcon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { supabase } from '@/libs/supabase';
+import { AuthError } from '@supabase/supabase-js';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,21 +20,42 @@ export default function AuthScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   // ログインする
   const login = async () => {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) Alert.alert(error.message);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        throw error;
+      }
+      router.navigate('/(authenticated)/(tabs)');
+    } catch (error) {
+      if (error instanceof AuthError) {
+        Alert.alert('ログインに失敗しました', error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   // アカウント登録する
   const signUp = async () => {
-    setLoading(true);
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) Alert.alert(error.message);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        throw error;
+      }
+      router.navigate('/(authenticated)/(tabs)');
+    } catch (error) {
+      if (error instanceof AuthError) {
+        Alert.alert('アカウント登録に失敗しました', error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isValid = () => {
@@ -41,7 +64,7 @@ export default function AuthScreen() {
 
   return (
     <SafeAreaView>
-      <View className="gap-6 m-4">
+      <View className="gap-6 p-4">
         {/* メールアドレスフォーム */}
         <FormControl isRequired={true}>
           <FormControlLabel>

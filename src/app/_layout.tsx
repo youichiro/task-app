@@ -1,20 +1,16 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import '@/global.css';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
-import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
+import { GlobalSessionProvider } from '@/hooks/useGlobalSession';
 
 export const unstable_settings = {
-  initialRouteName: '(tabs)',
+  // https://docs.expo.dev/router/advanced/router-settings/
+  initialRouteName: '(authenticated)',
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -41,18 +37,13 @@ export default function RootLayout() {
   }
 
   return (
-    <GluestackUIProvider mode="light">
-      <RootLayoutNav />
-    </GluestackUIProvider>
-  );
-}
-
-function RootLayoutNav() {
-  return (
-    <ThemeProvider value={DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-    </ThemeProvider>
+    <GlobalSessionProvider>
+      <GluestackUIProvider mode="light">
+        <Stack>
+          <Stack.Screen name="(authenticated)" options={{ headerShown: false }} />
+          <Stack.Screen name="(public)" options={{ headerShown: false }} />
+        </Stack>
+      </GluestackUIProvider>
+    </GlobalSessionProvider>
   );
 }
