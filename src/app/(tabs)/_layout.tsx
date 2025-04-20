@@ -15,8 +15,8 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   return (
     <Tabs>
-      <Tabs.Screen name="index" /> 
-      <Tabs.Screen name="auth" />
+      <Tabs.Screen name="index" />
+      <Tabs.Screen name="auth" options={{ headerShown: false }} />
     </Tabs>
   );
 }
