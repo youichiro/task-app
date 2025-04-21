@@ -3,6 +3,7 @@ import { Text } from '@/components/ui/text';
 import { useGlobalSession } from '@/hooks/useGlobalSession';
 import { supabase } from '@/libs/supabase';
 import { Alert, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AccountScreen() {
   const { session } = useGlobalSession();
@@ -13,19 +14,21 @@ export default function AccountScreen() {
   };
 
   return (
-    <View className="gap-6 p-4">
-      {session?.user ? (
-        <View>
-          <Text>ログイン中</Text>
-          <Text>email: {session.user.email}</Text>
-        </View>
-      ) : (
-        <Text>ログインしていません</Text>
-      )}
+    <SafeAreaView>
+      <View className="gap-6 p-4">
+        {session?.user ? (
+          <View>
+            <Text>ログイン中</Text>
+            <Text>email: {session.user.email}</Text>
+          </View>
+        ) : (
+          <Text>ログインしていません</Text>
+        )}
 
-      <Button onPress={logout} isDisabled={!session}>
-        <ButtonText>ログアウト</ButtonText>
-      </Button>
-    </View>
+        <Button onPress={logout} isDisabled={!session}>
+          <ButtonText>ログアウト</ButtonText>
+        </Button>
+      </View>
+    </SafeAreaView>
   );
 }
