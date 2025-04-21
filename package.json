@@ -10,7 +10,8 @@
     "test": "jest --watchAll",
     "lint:fix": "biome format --write && biome lint --write",
     "supabase": "supabase",
-    "supabase-studio": "open http://localhost:54323"
+    "supabase-studio": "open http://localhost:54323",
+    "gen-db-types": "supabase gen types typescript --local > src/libs/database.types.ts && npm run lint:fix"
   },
   "jest": {
     "preset": "jest-expo"
