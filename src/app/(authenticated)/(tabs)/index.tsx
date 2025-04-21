@@ -1,5 +1,5 @@
-import { Text } from '@/components/ui/text';
+import { Redirect } from 'expo-router';
 
 export default function TabIndexScreen() {
-  return <Text>TabIndexScreen</Text>;
+  return <Redirect href="/(authenticated)/(tabs)/tasks" />;
 }
