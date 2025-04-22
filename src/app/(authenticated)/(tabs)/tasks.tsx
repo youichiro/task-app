@@ -1,6 +1,7 @@
 import { Text } from '@/components/ui/text';
 import { useGlobalSession } from '@/hooks/useGlobalSession';
 import { useTasks } from '@/hooks/useTasks';
+import BasicLayout from '@/layouts/basicLayout';
 import { View } from 'react-native';
 
 export default function TasksScreen() {
@@ -10,13 +11,13 @@ export default function TasksScreen() {
   const { tasks } = useTasks({ userId: session.user.id });
 
   return (
-    <View className="p-4">
+    <BasicLayout>
       <Text>タスク一覧</Text>
       {tasks?.map((task) => (
         <View key={task.id} className="py-2 border-b border-gray-200">
           <Text>{task.title}</Text>
         </View>
       ))}
-    </View>
+    </BasicLayout>
   );
 }
