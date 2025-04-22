@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/form-control';
 import { EyeIcon, EyeOffIcon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
+import BasicLayout from '@/layouts/basicLayout';
 import { supabase } from '@/libs/supabase';
 import { AuthError } from '@supabase/supabase-js';
 import { useRouter } from 'expo-router';
@@ -63,8 +64,8 @@ export default function AuthScreen() {
   };
 
   return (
-    <SafeAreaView>
-      <View className="gap-6 p-4">
+    <BasicLayout withSafeArea={true}>
+      <View className="gap-6">
         {/* メールアドレスフォーム */}
         <FormControl isRequired={true}>
           <FormControlLabel>
@@ -115,6 +116,6 @@ export default function AuthScreen() {
           </Button>
         </View>
       </View>
-    </SafeAreaView>
+    </BasicLayout>
   );
 }
