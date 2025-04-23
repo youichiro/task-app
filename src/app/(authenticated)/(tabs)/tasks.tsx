@@ -13,7 +13,7 @@ import type { Database } from '@/libs/database.types';
 import { supabase } from '@/libs/supabase';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { FlatList, View } from 'react-native';
 
 export default function TasksScreen() {
   const { session } = useGlobalSession();
@@ -24,22 +24,9 @@ export default function TasksScreen() {
   const [showDrawer, setShowDrawer] = useState(false);
   const [taskTitle, setTaskTitle] = useState('');
 
-  const TaskItem = ({ task }: { task: Task }) => (
-    <View className="p-2">
-      <Checkbox value="checkbox" isChecked={task.is_completed}>
-        <CheckboxIndicator>
-          <CheckboxIcon as={CheckIcon} />
-        </CheckboxIndicator>
-        <CheckboxLabel size="sm" className="text-primary font-bold">
-          {task.title}
-        </CheckboxLabel>
-      </Checkbox>
-    </View>
-  );
-
   const mutation = useMutation({
     mutationFn: async (task: Database['public']['Tables']['tasks']['Insert']) => {
-      const {data, error } = await supabase.from('tasks').insert(task);
+      const { data, error } = await supabase.from('tasks').insert(task);
       if (error) throw error;
       return data;
     },
@@ -61,9 +48,7 @@ export default function TasksScreen() {
   return (
     <BasicLayout>
       <Card variant="filled" size="sm">
-        {tasks?.map((task) => (
-          <TaskItem key={task.id} task={task} />
-        ))}
+        <FlatList data={tasks} keyExtractor={(item) => item.id.toString()} renderItem={({ item }) => <TaskItem task={item} />} />
       </Card>
       <Fab onPress={() => setShowDrawer(true)}>
         <FabIcon as={AddIcon} size="lg" />
@@ -86,3 +71,19 @@ export default function TasksScreen() {
     </BasicLayout>
   );
 }
+
+const TaskItem = ({ task }: { task: Task }) => {
+  console.log('render task', task.id);
+  return (
+    <View className="p-2">
+      <Checkbox value="checkbox" isChecked={task.is_completed}>
+        <CheckboxIndicator>
+          <CheckboxIcon as={CheckIcon} />
+        </CheckboxIndicator>
+        <CheckboxLabel size="sm" className="text-primary font-bold">
+          {task.title}
+        </CheckboxLabel>
+      </Checkbox>
+    </View>
+  );
+};
