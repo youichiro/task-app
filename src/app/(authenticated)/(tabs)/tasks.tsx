@@ -9,6 +9,9 @@ import { useGlobalSession } from '@/hooks/useGlobalSession';
 import { useTasks } from '@/hooks/useTasks';
 import type { Task } from '@/hooks/useTasks';
 import BasicLayout from '@/layouts/basicLayout';
+import type { Database } from '@/libs/database.types';
+import { supabase } from '@/libs/supabase';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View } from 'react-native';
 
@@ -16,6 +19,7 @@ export default function TasksScreen() {
   const { session } = useGlobalSession();
   if (!session || !session.user) return;
 
+  const queryClient = useQueryClient();
   const { tasks } = useTasks({ userId: session.user.id });
   const [showDrawer, setShowDrawer] = useState(false);
   const [taskTitle, setTaskTitle] = useState('');
@@ -33,11 +37,26 @@ export default function TasksScreen() {
     </View>
   );
 
+  const mutation = useMutation({
+    mutationFn: async (task: Database['public']['Tables']['tasks']['Insert']) => {
+      const {data, error } = await supabase.from('tasks').insert(task);
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', session.user.id] });
+    },
+  });
+
   const addTask = async () => {
     if (taskTitle.length === 0) return;
+    mutation.mutate({
+      title: taskTitle,
+      user_id: session.user.id,
+    });
     setTaskTitle('');
     setShowDrawer(false);
-  }
+  };
 
   return (
     <BasicLayout>
