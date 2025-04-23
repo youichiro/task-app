@@ -1,8 +1,9 @@
 import { Card } from '@/components/ui/card';
 import { Checkbox, CheckboxIcon, CheckboxIndicator, CheckboxLabel } from '@/components/ui/checkbox';
-import { Drawer, DrawerBackdrop, DrawerBody, DrawerContent } from '@/components/ui/drawer';
+import { Drawer, DrawerBackdrop, DrawerBody, DrawerContent, DrawerFooter } from '@/components/ui/drawer';
 import { Fab, FabIcon } from '@/components/ui/fab';
-import { AddIcon, CheckIcon } from '@/components/ui/icon';
+import { AddIcon, ArrowUpIcon, CheckIcon } from '@/components/ui/icon';
+import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { useGlobalSession } from '@/hooks/useGlobalSession';
 import { useTasks } from '@/hooks/useTasks';
@@ -17,6 +18,7 @@ export default function TasksScreen() {
 
   const { tasks } = useTasks({ userId: session.user.id });
   const [showDrawer, setShowDrawer] = useState(false);
+  const [taskTitle, setTaskTitle] = useState('');
 
   const TaskItem = ({ task }: { task: Task }) => (
     <View className="p-2">
@@ -31,6 +33,12 @@ export default function TasksScreen() {
     </View>
   );
 
+  const addTask = async () => {
+    if (taskTitle.length === 0) return;
+    setTaskTitle('');
+    setShowDrawer(false);
+  }
+
   return (
     <BasicLayout>
       <Card variant="filled" size="sm">
@@ -41,12 +49,19 @@ export default function TasksScreen() {
       <Fab onPress={() => setShowDrawer(true)}>
         <FabIcon as={AddIcon} size="lg" />
       </Fab>
-      <Drawer anchor='bottom' isOpen={showDrawer} onClose={() => setShowDrawer(false)}>
+      <Drawer anchor="bottom" isOpen={showDrawer} onClose={() => setShowDrawer(false)}>
         <DrawerBackdrop />
         <DrawerContent>
           <DrawerBody>
-            <Text>aaa</Text>
+            <Input variant="none">
+              <InputField placeholder="何をしたいですか？" autoFocus autoCapitalize="none" value={taskTitle} onChangeText={setTaskTitle} />
+            </Input>
           </DrawerBody>
+          <DrawerFooter>
+            <Fab size="lg" isDisabled={taskTitle.length === 0} onPress={() => addTask()}>
+              <FabIcon as={ArrowUpIcon} size="lg" />
+            </Fab>
+          </DrawerFooter>
         </DrawerContent>
       </Drawer>
     </BasicLayout>
