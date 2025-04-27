@@ -19,31 +19,8 @@ export default function TasksScreen() {
   const { session } = useGlobalSession();
   if (!session || !session.user) return;
 
-  const queryClient = useQueryClient();
   const { tasks } = useTasks({ userId: session.user.id });
   const [showDrawer, setShowDrawer] = useState(false);
-  const [taskTitle, setTaskTitle] = useState('');
-
-  const mutation = useMutation({
-    mutationFn: async (task: Database['public']['Tables']['tasks']['Insert']) => {
-      const { data, error } = await supabase.from('tasks').insert(task);
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks', session.user.id] });
-    },
-  });
-
-  const addTask = async () => {
-    if (taskTitle.length === 0) return;
-    mutation.mutate({
-      title: taskTitle,
-      user_id: session.user.id,
-    });
-    setTaskTitle('');
-    setShowDrawer(false);
-  };
 
   return (
     <BasicLayout>
@@ -53,27 +30,56 @@ export default function TasksScreen() {
       <Fab onPress={() => setShowDrawer(true)}>
         <FabIcon as={AddIcon} size="lg" />
       </Fab>
-      <Drawer anchor="bottom" isOpen={showDrawer} onClose={() => setShowDrawer(false)}>
-        <DrawerBackdrop />
-        <DrawerContent>
-          <DrawerBody>
-            <Input variant="none">
-              <InputField placeholder="何をしたいですか？" autoFocus autoCapitalize="none" value={taskTitle} onChangeText={setTaskTitle} />
-            </Input>
-          </DrawerBody>
-          <DrawerFooter>
-            <Fab size="lg" isDisabled={taskTitle.length === 0} onPress={() => addTask()}>
-              <FabIcon as={ArrowUpIcon} size="lg" />
-            </Fab>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+      <TaskFormDrawer isOpen={showDrawer} onClose={() => setShowDrawer(false)} userId={session.user.id} />
     </BasicLayout>
   );
 }
 
+const TaskFormDrawer = ({ isOpen, onClose, userId }: { isOpen: boolean; onClose: () => void; userId: string }) => {
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState('');
+
+  const mutation = useMutation({
+    mutationFn: async (task: Database['public']['Tables']['tasks']['Insert']) => {
+      const { data, error } = await supabase.from('tasks').insert(task);
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', userId] });
+    },
+  });
+
+  const addTask = async () => {
+    if (title.length === 0) return;
+    mutation.mutate({
+      title: title,
+      user_id: userId,
+    });
+    setTitle('');
+    onClose();
+  };
+
+  return (
+    <Drawer anchor="bottom" isOpen={isOpen} onClose={onClose}>
+      <DrawerBackdrop />
+      <DrawerContent>
+        <DrawerBody>
+          <Input variant="none">
+            <InputField placeholder="何をしたいですか？" autoFocus autoCapitalize="none" value={title} onChangeText={setTitle} />
+          </Input>
+        </DrawerBody>
+        <DrawerFooter>
+          <Fab size="lg" isDisabled={title.length === 0} onPress={() => addTask()}>
+            <FabIcon as={ArrowUpIcon} size="lg" />
+          </Fab>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  );
+};
+
 const TaskItem = ({ task }: { task: Task }) => {
-  console.log('render task', task.id);
   return (
     <View className="p-2">
       <Checkbox value="checkbox" isChecked={task.is_completed}>
