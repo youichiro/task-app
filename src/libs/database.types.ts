@@ -41,12 +41,12 @@ export type Database = {
         };
         Insert: {
           content?: string | null;
-          created_at: string;
+          created_at?: string;
           date?: string | null;
           id?: number;
           is_completed?: boolean;
           title: string;
-          updated_at: string;
+          updated_at?: string;
           user_id: string;
         };
         Update: {

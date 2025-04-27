@@ -9,7 +9,7 @@ const fetch = async (userId: string) => {
     throw error;
   }
   return data;
-}
+};
 
 export function useTasks({ userId }: { userId: string }) {
   const { data, isLoading, error } = useQuery({
