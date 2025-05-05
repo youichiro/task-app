@@ -13,19 +13,41 @@ import type { Database } from '@/libs/database.types';
 import { supabase } from '@/libs/supabase';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { FlatList, View } from 'react-native';
+import { Alert, FlatList, Pressable, View } from 'react-native';
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import Reanimated, { type SharedValue, useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
 
 export default function TasksScreen() {
   const { session } = useGlobalSession();
   if (!session || !session.user) return;
 
+  const queryClient = useQueryClient();
   const { tasks } = useTasks({ userId: session.user.id });
   const [showDrawer, setShowDrawer] = useState(false);
+
+  const deteteTaskMutation = useMutation({
+    mutationFn: async (taskId: number) => {
+      const { data, error } = await supabase.from('tasks').delete().eq('id', taskId);
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', session.user.id] });
+    },
+  });
+
+  const deleteTask = async (taskId: number) => {
+    deteteTaskMutation.mutate(taskId);
+  };
 
   return (
     <BasicLayout>
       <Card variant="filled" size="sm">
-        <FlatList data={tasks} keyExtractor={(item) => item.id.toString()} renderItem={({ item }) => <TaskItem task={item} />} />
+        <FlatList
+          data={tasks}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => <TaskItem task={item} deleteTask={deleteTask} />}
+        />
       </Card>
       <Fab onPress={() => setShowDrawer(true)}>
         <FabIcon as={AddIcon} size="lg" />
@@ -79,17 +101,59 @@ const TaskFormDrawer = ({ isOpen, onClose, userId }: { isOpen: boolean; onClose:
   );
 };
 
-const TaskItem = ({ task }: { task: Task }) => {
+const ACTION_WIDTH = 70;
+
+const TaskItem = ({ task, deleteTask }: { task: Task; deleteTask: (taskId: number) => void }) => {
+  const onDelete = () => {
+    Alert.alert('削除しますか？', 'このタスクを削除します。', [
+      {
+        text: 'キャンセル',
+        style: 'cancel',
+        onPress: () => {},
+      },
+      {
+        text: '削除',
+        onPress: () => deleteTask(task.id),
+        style: 'destructive',
+      },
+    ]);
+  };
+
   return (
-    <View className="p-2">
-      <Checkbox value="checkbox" isChecked={task.is_completed}>
-        <CheckboxIndicator>
-          <CheckboxIcon as={CheckIcon} />
-        </CheckboxIndicator>
-        <CheckboxLabel size="sm" className="text-primary font-bold">
-          {task.title}
-        </CheckboxLabel>
-      </Checkbox>
+    <ReanimatedSwipeable
+      renderRightActions={(progress, dragX) => RightAction(progress, dragX, onDelete)}
+      friction={2}
+      rightThreshold={ACTION_WIDTH / 2}
+      overshootFriction={8}
+      enableTrackpadTwoFingerGesture
+    >
+      <View className="p-2">
+        <Checkbox value="checkbox" isChecked={task.is_completed}>
+          <CheckboxIndicator>
+            <CheckboxIcon as={CheckIcon} />
+          </CheckboxIndicator>
+          <CheckboxLabel size="sm" className="text-primary font-bold">
+            {task.title}
+          </CheckboxLabel>
+        </Checkbox>
+      </View>
+    </ReanimatedSwipeable>
+  );
+};
+
+const RightAction = (progress: SharedValue<number>, dragX: SharedValue<number>, onDelete: () => void) => {
+  const styleAnimation = useAnimatedStyle(() => {
+    const translateX = interpolate(dragX.value, [-ACTION_WIDTH, 0], [0, ACTION_WIDTH], Extrapolation.CLAMP);
+    return { transform: [{ translateX }] };
+  });
+
+  return (
+    <View style={{ width: ACTION_WIDTH }} className="flex-row justify-end">
+      <Reanimated.View style={[{ flex: 1 }, styleAnimation]}>
+        <Pressable className="bg-red-500 justify-center items-center h-full rounded" onPress={onDelete}>
+          <Text className="text-white font-bold">削除</Text>
+        </Pressable>
+      </Reanimated.View>
     </View>
   );
 };
