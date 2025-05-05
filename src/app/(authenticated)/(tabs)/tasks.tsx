@@ -62,12 +62,6 @@ const TaskFormDrawer = ({ isOpen, onClose, userId }: { isOpen: boolean; onClose:
     onClose();
   };
 
-  const deleteTask = async (taskId: number) => {
-    const { error } = await supabase.from('tasks').delete().eq('id', taskId);
-    if (error) throw error;
-    queryClient.invalidateQueries({ queryKey: ['tasks', userId] });
-  };
-
   return (
     <Drawer anchor="bottom" isOpen={isOpen} onClose={onClose}>
       <DrawerBackdrop />
