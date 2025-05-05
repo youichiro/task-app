@@ -19,7 +19,7 @@ import Reanimated, {
   type SharedValue,
   useAnimatedStyle,
   interpolate,
-  Extrapolate,
+  Extrapolation,
 } from 'react-native-reanimated';
 
 export default function TasksScreen() {
@@ -156,7 +156,7 @@ const RightAction = (
   onDelete: () => void,
 ) => {
   const styleAnimation = useAnimatedStyle(() => {
-    const translateX = interpolate(dragX.value, [-ACTION_WIDTH, 0], [0, ACTION_WIDTH], Extrapolate.CLAMP);
+    const translateX = interpolate(dragX.value, [-ACTION_WIDTH, 0], [0, ACTION_WIDTH], Extrapolation.CLAMP);
     return {
       transform: [{ translateX }],
     };
