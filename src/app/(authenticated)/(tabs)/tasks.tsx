@@ -15,12 +15,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Alert, FlatList, Pressable, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-import Reanimated, {
-  type SharedValue,
-  useAnimatedStyle,
-  interpolate,
-  Extrapolation,
-} from 'react-native-reanimated';
+import Reanimated, { type SharedValue, useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
 
 export default function TasksScreen() {
   const { session } = useGlobalSession();
@@ -109,11 +104,7 @@ const TaskFormDrawer = ({ isOpen, onClose, userId }: { isOpen: boolean; onClose:
 const ACTION_WIDTH = 70;
 
 const TaskItem = ({ task, deleteTask }: { task: Task; deleteTask: (taskId: number) => void }) => {
-  const onDeleteConfirmed = () => {
-    deleteTask(task.id);
-  };
-
-  const onDeleteRequest = () => {
+  const onDelete = () => {
     Alert.alert('削除しますか？', 'このタスクを削除します。', [
       {
         text: 'キャンセル',
@@ -122,7 +113,7 @@ const TaskItem = ({ task, deleteTask }: { task: Task; deleteTask: (taskId: numbe
       },
       {
         text: '削除',
-        onPress: onDeleteConfirmed,
+        onPress: () => deleteTask(task.id),
         style: 'destructive',
       },
     ]);
@@ -130,7 +121,7 @@ const TaskItem = ({ task, deleteTask }: { task: Task; deleteTask: (taskId: numbe
 
   return (
     <ReanimatedSwipeable
-      renderRightActions={(progress, dragX) => RightAction(progress, dragX, onDeleteRequest)}
+      renderRightActions={(progress, dragX) => RightAction(progress, dragX, onDelete)}
       friction={2}
       rightThreshold={ACTION_WIDTH / 2}
       overshootFriction={8}
@@ -150,25 +141,16 @@ const TaskItem = ({ task, deleteTask }: { task: Task; deleteTask: (taskId: numbe
   );
 };
 
-const RightAction = (
-  progress: SharedValue<number>,
-  dragX: SharedValue<number>,
-  onDelete: () => void,
-) => {
+const RightAction = (progress: SharedValue<number>, dragX: SharedValue<number>, onDelete: () => void) => {
   const styleAnimation = useAnimatedStyle(() => {
     const translateX = interpolate(dragX.value, [-ACTION_WIDTH, 0], [0, ACTION_WIDTH], Extrapolation.CLAMP);
-    return {
-      transform: [{ translateX }],
-    };
+    return { transform: [{ translateX }] };
   });
 
   return (
     <View style={{ width: ACTION_WIDTH }} className="flex-row justify-end">
       <Reanimated.View style={[{ flex: 1 }, styleAnimation]}>
-        <Pressable
-          className="bg-red-500 justify-center items-center h-full rounded"
-          onPress={onDelete} // Use the passed onDelete function (which triggers the alert)
-        >
+        <Pressable className="bg-red-500 justify-center items-center h-full rounded" onPress={onDelete}>
           <Text className="text-white font-bold">削除</Text>
         </Pressable>
       </Reanimated.View>
