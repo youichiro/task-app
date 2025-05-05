@@ -12,10 +12,9 @@ import BasicLayout from '@/layouts/basicLayout';
 import type { Database } from '@/libs/database.types';
 import { supabase } from '@/libs/supabase';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { type ReactNode, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { FlatList, Pressable, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-import Animated from 'react-native-reanimated';
 import Reanimated, { type SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 
 export default function TasksScreen() {
