@@ -12,8 +12,11 @@ import BasicLayout from '@/layouts/basicLayout';
 import type { Database } from '@/libs/database.types';
 import { supabase } from '@/libs/supabase';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
-import { FlatList, View } from 'react-native';
+import { type ReactNode, useState } from 'react';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import Animated from 'react-native-reanimated';
+import Reanimated, { type SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 
 export default function TasksScreen() {
   const { session } = useGlobalSession();
@@ -81,15 +84,33 @@ const TaskFormDrawer = ({ isOpen, onClose, userId }: { isOpen: boolean; onClose:
 
 const TaskItem = ({ task }: { task: Task }) => {
   return (
-    <View className="p-2">
-      <Checkbox value="checkbox" isChecked={task.is_completed}>
-        <CheckboxIndicator>
-          <CheckboxIcon as={CheckIcon} />
-        </CheckboxIndicator>
-        <CheckboxLabel size="sm" className="text-primary font-bold">
-          {task.title}
-        </CheckboxLabel>
-      </Checkbox>
-    </View>
+    <ReanimatedSwipeable renderRightActions={RightAction} friction={2} rightThreshold={10} overshootFriction={8} enableTrackpadTwoFingerGesture>
+      <View className="p-2">
+        <Checkbox value="checkbox" isChecked={task.is_completed}>
+          <CheckboxIndicator>
+            <CheckboxIcon as={CheckIcon} />
+          </CheckboxIndicator>
+          <CheckboxLabel size="sm" className="text-primary font-bold">
+            {task.title}
+          </CheckboxLabel>
+        </Checkbox>
+      </View>
+    </ReanimatedSwipeable>
+  );
+};
+
+const RightAction = (drag: SharedValue<number>) => {
+  const styleAnimation = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: (drag.value * -60) + 60 }],
+    };
+  });
+
+  return (
+    <Reanimated.View style={styleAnimation}>
+      <Pressable className="bg-red-500 justify-center items-center px-3 rounded">
+        <Text className="text-white font-bold">削除</Text>
+      </Pressable>
+    </Reanimated.View>
   );
 };

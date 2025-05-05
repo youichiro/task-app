@@ -13,6 +13,8 @@ module.exports = function(api) {
                 "@": "./src",
                 "tailwind.config": "./tailwind.config.js"
             }
-        }]]
+        },
+        'react-native-reanimated/plugin'
+    ]]
     };
 };

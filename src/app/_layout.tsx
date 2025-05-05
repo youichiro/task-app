@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { GlobalSessionProvider } from '@/hooks/useGlobalSession';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export const unstable_settings = {
   // https://docs.expo.dev/router/advanced/router-settings/
@@ -42,10 +43,12 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <GlobalSessionProvider>
         <GluestackUIProvider mode="light">
-          <Stack>
-            <Stack.Screen name="(authenticated)" options={{ headerShown: false }} />
-            <Stack.Screen name="(public)" options={{ headerShown: false }} />
-          </Stack>
+          <GestureHandlerRootView>
+            <Stack>
+              <Stack.Screen name="(authenticated)" options={{ headerShown: false }} />
+              <Stack.Screen name="(public)" options={{ headerShown: false }} />
+            </Stack>
+          </GestureHandlerRootView>
         </GluestackUIProvider>
       </GlobalSessionProvider>
     </QueryClientProvider>
