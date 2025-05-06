@@ -85,7 +85,7 @@ export default function TasksScreen() {
             return (
               <Pressable onPress={() => setShowCompletedTasks(!showCompletedTasks)} className="flex-row items-center">
                 <Text>{title}</Text>
-                <Icon as={showCompletedTasks ? ChevronDownIcon : ChevronUpIcon} color='gray' />
+                <Icon as={showCompletedTasks ? ChevronDownIcon : ChevronUpIcon} color="gray" />
               </Pressable>
             );
           }
@@ -159,7 +159,7 @@ const TaskItem = ({
   const onDelete = () => {
     Alert.alert('削除しますか？', 'このタスクを削除します。', [
       { text: 'キャンセル', style: 'cancel', onPress: () => {} },
-      { text: '削除', onPress: () => deleteTask(task.id), style: 'destructive'},
+      { text: '削除', onPress: () => deleteTask(task.id), style: 'destructive' },
     ]);
   };
 
