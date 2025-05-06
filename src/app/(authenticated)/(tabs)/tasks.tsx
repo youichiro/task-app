@@ -1,9 +1,10 @@
-import { Card } from '@/components/ui/card';
 import { Checkbox, CheckboxIcon, CheckboxIndicator, CheckboxLabel } from '@/components/ui/checkbox';
 import { Drawer, DrawerBackdrop, DrawerBody, DrawerContent, DrawerFooter } from '@/components/ui/drawer';
 import { Fab, FabIcon } from '@/components/ui/fab';
-import { AddIcon, ArrowUpIcon, CheckIcon } from '@/components/ui/icon';
+import { AddIcon, ArrowUpIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon, Icon } from '@/components/ui/icon';
 import { Input, InputField } from '@/components/ui/input';
+import { Pressable } from '@/components/ui/pressable';
+import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { useGlobalSession } from '@/hooks/useGlobalSession';
 import { useTasks } from '@/hooks/useTasks';
@@ -13,7 +14,7 @@ import type { Database } from '@/libs/database.types';
 import { supabase } from '@/libs/supabase';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Alert, FlatList, Pressable, View } from 'react-native';
+import { Alert, View, SectionList } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Reanimated, { type SharedValue, useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
 
@@ -22,10 +23,11 @@ export default function TasksScreen() {
   if (!session || !session.user) return;
 
   const queryClient = useQueryClient();
-  const { tasks } = useTasks({ userId: session.user.id });
+  const { incompletedTasks, completedTasks, isLoading } = useTasks({ userId: session.user.id });
   const [showDrawer, setShowDrawer] = useState(false);
+  const [showCompletedTasks, setShowCompletedTasks] = useState(true);
 
-  const deteteTaskMutation = useMutation({
+  const deleteTaskMutation = useMutation({
     mutationFn: async (taskId: number) => {
       const { data, error } = await supabase.from('tasks').delete().eq('id', taskId);
       if (error) throw error;
@@ -36,19 +38,61 @@ export default function TasksScreen() {
     },
   });
 
-  const deleteTask = async (taskId: number) => {
-    deteteTaskMutation.mutate(taskId);
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({ taskId, isCompleted }: { taskId: number; isCompleted: boolean }) => {
+      const updatedAt = new Date().toISOString();
+      const { data, error } = await supabase.from('tasks').update({ is_completed: isCompleted, updated_at: updatedAt }).eq('id', taskId);
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', session.user.id] });
+    },
+  });
+
+  const deleteTask = (taskId: number) => {
+    deleteTaskMutation.mutate(taskId);
   };
+
+  const updateTask = (taskId: number, isCompleted: boolean) => {
+    updateTaskMutation.mutate({ taskId, isCompleted: !isCompleted });
+  };
+
+  const sections = [
+    { title: '未完了', name: 'incompleted', data: incompletedTasks, show: true },
+    { title: '完了済み', name: 'completed', data: completedTasks, show: showCompletedTasks },
+  ];
+
+  if (isLoading) {
+    return (
+      <BasicLayout>
+        <View className="flex-1 justify-center items-center">
+          <Spinner size="large" />
+        </View>
+      </BasicLayout>
+    );
+  }
 
   return (
     <BasicLayout>
-      <Card variant="filled" size="sm">
-        <FlatList
-          data={tasks}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => <TaskItem task={item} deleteTask={deleteTask} />}
-        />
-      </Card>
+      <SectionList
+        sections={sections}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ section, item }) => (section.show ? <TaskItem task={item} deleteTask={deleteTask} updateTask={updateTask} /> : null)}
+        renderSectionHeader={({ section: { title, name, data } }) => {
+          if (data.length === 0) return null;
+          if (name === 'completed') {
+            return (
+              <Pressable onPress={() => setShowCompletedTasks(!showCompletedTasks)} className="flex-row items-center">
+                <Text>{title}</Text>
+                <Icon as={showCompletedTasks ? ChevronDownIcon : ChevronUpIcon} color="gray" />
+              </Pressable>
+            );
+          }
+          return <Text>{title}</Text>;
+        }}
+        stickySectionHeadersEnabled={false}
+      />
       <Fab onPress={() => setShowDrawer(true)}>
         <FabIcon as={AddIcon} size="lg" />
       </Fab>
@@ -103,19 +147,19 @@ const TaskFormDrawer = ({ isOpen, onClose, userId }: { isOpen: boolean; onClose:
 
 const ACTION_WIDTH = 70;
 
-const TaskItem = ({ task, deleteTask }: { task: Task; deleteTask: (taskId: number) => void }) => {
+const TaskItem = ({
+  task,
+  deleteTask,
+  updateTask,
+}: {
+  task: Task;
+  deleteTask: (taskId: number) => void;
+  updateTask: (taskId: number, isCompleted: boolean) => void;
+}) => {
   const onDelete = () => {
     Alert.alert('削除しますか？', 'このタスクを削除します。', [
-      {
-        text: 'キャンセル',
-        style: 'cancel',
-        onPress: () => {},
-      },
-      {
-        text: '削除',
-        onPress: () => deleteTask(task.id),
-        style: 'destructive',
-      },
+      { text: 'キャンセル', style: 'cancel', onPress: () => {} },
+      { text: '削除', onPress: () => deleteTask(task.id), style: 'destructive' },
     ]);
   };
 
@@ -128,12 +172,17 @@ const TaskItem = ({ task, deleteTask }: { task: Task; deleteTask: (taskId: numbe
       enableTrackpadTwoFingerGesture
     >
       <View className="p-2">
-        <Checkbox value="checkbox" isChecked={task.is_completed}>
+        <Checkbox
+          value={task.id.toString()}
+          isChecked={task.is_completed}
+          onChange={() => updateTask(task.id, task.is_completed)}
+          aria-label={task.title}
+        >
           <CheckboxIndicator>
             <CheckboxIcon as={CheckIcon} />
           </CheckboxIndicator>
-          <CheckboxLabel size="sm" className="text-primary font-bold">
-            {task.title}
+          <CheckboxLabel>
+            <Text bold>{task.title}</Text>
           </CheckboxLabel>
         </Checkbox>
       </View>
