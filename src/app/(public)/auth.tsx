@@ -14,7 +14,6 @@ import { AuthError } from '@supabase/supabase-js';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AuthScreen() {
   const [email, setEmail] = useState('');
