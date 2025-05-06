@@ -18,11 +18,12 @@ import {
   getDate,
 } from 'date-fns';
 import { ja } from 'date-fns/locale';
+import BasicLayout from '@/layouts/basicLayout';
 
 const WEEK_LABELS = ['日', '月', '火', '水', '木', '金', '土'];
 const today = startOfDay(new Date());
 
-const MonthView = ({ year, month }: { year: number, month: number }) => {
+const MonthView = ({ year, month }: { year: number; month: number }) => {
   const monthStartDate = new Date(year, month, 1);
 
   const calendarDays = useMemo(() => {
@@ -37,34 +38,21 @@ const MonthView = ({ year, month }: { year: number, month: number }) => {
   }, [monthStartDate]);
 
   return (
-    <View className="flex-1 p-2">
-      <View className="flex-row justify-around mb-2 h-6">
-        {WEEK_LABELS.map((label) => (
-          <View key={label} className="w-10 items-center">
-            <Text>{label}</Text>
+    <View className="flex-1 flex-wrap flex-row">
+      {calendarDays.map((date, index) => {
+        const isCurrentMonth = getMonth(date) === month;
+        const isToday = isSameDay(date, today);
+        const dayNumber = getDate(date);
+        const key = `day-${format(date, 'yyyy-MM-dd')}-${index}`;
+
+        return (
+          <View key={key} className={`w-[14.28%] aspect-square items-center justify-center ${isToday ? 'bg-blue-100 rounded-full' : ''}`}>
+            <Text className={`text-center ${!isCurrentMonth ? 'text-gray-400' : ''} ${isToday ? 'font-bold text-blue-600' : ''}`}>
+              {dayNumber}
+            </Text>
           </View>
-        ))}
-      </View>
-
-      <View className="flex-wrap flex-row">
-        {calendarDays.map((date, index) => {
-          const isCurrentMonth = getMonth(date) === month;
-          const isToday = isSameDay(date, today);
-          const dayNumber = getDate(date);
-          const key = `day-${format(date, 'yyyy-MM-dd')}-${index}`;
-
-          return (
-            <View
-              key={key}
-              className={`w-[14.28%] aspect-square items-center justify-center ${isToday ? 'bg-blue-100 rounded-full' : ''}`}
-            >
-              <Text className={`text-center ${!isCurrentMonth ? 'text-gray-400' : ''} ${isToday ? 'font-bold text-blue-600' : ''}`}>
-                {dayNumber}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
+        );
+      })}
     </View>
   );
 };
@@ -81,7 +69,7 @@ export default function CalendarScreen() {
 
       return <MonthView year={year} month={month} />;
     },
-    [referenceDate]
+    [referenceDate],
   );
 
   const initialPageIndex = useMemo(() => {
@@ -93,15 +81,21 @@ export default function CalendarScreen() {
       const newDate = addMonths(referenceDate, pageIndex);
       setCurrentDisplayDate(newDate);
     },
-    [referenceDate]
+    [referenceDate],
   );
 
   return (
-    <View className="flex-1 bg-white pt-4">
+    <BasicLayout>
       <View className="items-center mb-4">
-        <Text className="text-xl font-bold">
-          {format(currentDisplayDate, 'yyyy年 M月', { locale: ja })}
-        </Text>
+        <Text className="text-xl font-bold">{format(currentDisplayDate, 'yyyy年 M月', { locale: ja })}</Text>
+      </View>
+
+      <View className="flex-row justify-around">
+        {WEEK_LABELS.map((label) => (
+          <View key={label} className="items-center">
+            <Text>{label}</Text>
+          </View>
+        ))}
       </View>
 
       <InfinitePager
@@ -111,6 +105,6 @@ export default function CalendarScreen() {
         initialIndex={initialPageIndex}
         style={{ flex: 1 }}
       />
-    </View>
+    </BasicLayout>
   );
 }
