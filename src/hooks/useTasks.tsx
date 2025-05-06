@@ -18,5 +18,8 @@ export function useTasks({ userId }: { userId: string }) {
     enabled: !!userId,
   });
 
-  return { tasks: data, isLoading, error };
+  const incompletedTasks = data?.filter((task) => !task.is_completed) ?? [];
+  const completedTasks = data?.filter((task) => task.is_completed) ?? [];
+
+  return { tasks: data, incompletedTasks, completedTasks, isLoading, error };
 }
