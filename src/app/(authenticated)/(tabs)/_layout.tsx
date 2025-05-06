@@ -10,6 +10,10 @@ export default function TabLayout() {
         options={{ title: '✅タスク', tabBarIcon: ({ color }) => <FontAwesome name="check" color={color} size={20} /> }}
       />
       <Tabs.Screen
+        name="calendar"
+        options={{ title: '📅カレンダー', tabBarIcon: ({ color }) => <FontAwesome name="calendar" color={color} size={20} /> }}
+      />
+      <Tabs.Screen
         name="setting"
         options={{ title: '設定', tabBarIcon: ({ color }) => <FontAwesome name="user" color={color} size={20} /> }}
       />
