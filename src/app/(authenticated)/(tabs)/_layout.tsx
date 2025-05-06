@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { FontAwesome } from '@expo/vector-icons';
+import { CalendarDaysIcon, CheckIcon, Icon, SettingsIcon } from '@/components/ui/icon';
 
 export default function TabLayout() {
   return (
@@ -7,11 +7,15 @@ export default function TabLayout() {
       <Tabs.Screen name="index" />
       <Tabs.Screen
         name="tasks"
-        options={{ title: '✅タスク', tabBarIcon: ({ color }) => <FontAwesome name="check" color={color} size={20} /> }}
+        options={{ title: '✅タスク', tabBarIcon: ({ color }) => <Icon as={CheckIcon} color={color} size="xl" /> }}
+      />
+      <Tabs.Screen
+        name="calendar"
+        options={{ title: '📅カレンダー', tabBarIcon: ({ color }) => <Icon as={CalendarDaysIcon} color={color} size="xl" /> }}
       />
       <Tabs.Screen
         name="setting"
-        options={{ title: '設定', tabBarIcon: ({ color }) => <FontAwesome name="user" color={color} size={20} /> }}
+        options={{ title: '設定', tabBarIcon: ({ color }) => <Icon as={SettingsIcon} color={color} size="xl" /> }}
       />
     </Tabs>
   );
